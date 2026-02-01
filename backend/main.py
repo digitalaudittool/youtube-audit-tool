@@ -4,20 +4,19 @@ from audit_rules import run_audit
 
 app = FastAPI()
 
-@app.get("/")
+@app.get("/health")
 def health():
-    return {"status": "Backend running"}
+    return {"status": "ok"}
 
 @app.get("/channel")
 def channel(channel_id: str):
-    data = get_channel_data(channel_id)
-    return data
+    return get_channel_data(channel_id)
 
 @app.get("/audit")
 def audit(channel_id: str):
-    channel_data = get_channel_data(channel_id)
-    audit_result = run_audit(channel_data)
+    data = get_channel_data(channel_id)
+    audit_result = run_audit(data)
     return {
-        "channel": channel_data,
+        "channel": data["items"][0],
         "audit": audit_result
     }
