@@ -60,20 +60,28 @@ def health():
 
 @app.get("/audit")
 def audit(channel_id: str, request: Request):
-    # 🚦 Rate-limit FIRST
-    client_ip = request.client.host
-    if rate_limited(client_ip):
-        return {"error": "Too many requests. Please wait a minute."}
-
     now = time.time()
+    ip = request.client.host
 
-    # 🔁 Cache hit
+    # ---- RATE LIMIT ----
+    history = REQUESTS.get(ip, [])
+    history = [t for t in history if now - t < RATE_WINDOW]
+
+    if len(history) >= RATE_LIMIT:
+        return {
+            "error": "Rate limit exceeded. Please wait and try again."
+        }
+
+    history.append(now)
+    REQUESTS[ip] = history
+    # --------------------
+
+    # ---- CACHE ----
     if channel_id in CACHE:
         cached = CACHE[channel_id]
         if now - cached["time"] < CACHE_TTL:
             return cached["data"]
 
-    # 🔍 Fetch YouTube data
     data = get_channel_data(channel_id)
     if not data or not data.get("items"):
         return {"error": "Channel not found"}
@@ -85,10 +93,10 @@ def audit(channel_id: str, request: Request):
         "audit": audit_result
     }
 
-    # 💾 Save to cache
     CACHE[channel_id] = {
         "time": now,
         "data": response
     }
 
     return response
+
