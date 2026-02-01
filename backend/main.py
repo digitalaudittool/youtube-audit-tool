@@ -3,8 +3,8 @@ from typing import Dict
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from youtube_api import get_channel_data
-from audit_rules import run_audit
+from backend.youtube_api import get_channel_data
+from backend.audit_rules import run_audit
 
 
 # --------------------
