@@ -1,44 +1,46 @@
 import os
 import requests
 
-API_KEY = os.getenv("YOUTUBE_API_KEY")
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
-SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
-CHANNELS_URL = "https://www.googleapis.com/youtube/v3/channels"
+BASE_URL = "https://www.googleapis.com/youtube/v3"
+
+
+def _get_channels(params):
+    params["key"] = YOUTUBE_API_KEY
+    params["part"] = "snippet,statistics"
+    res = requests.get(f"{BASE_URL}/channels", params=params, timeout=10).json()
+    return res.get("items")
 
 
 def get_channel_data(query: str):
-    if not API_KEY:
+    if not YOUTUBE_API_KEY:
         return None
 
     q = query.strip()
 
-    # 1️⃣ If handle is provided, try forHandle (BEST & OFFICIAL)
+    # 1️⃣ Try HANDLE (most reliable now)
     if q.startswith("@"):
-        r = requests.get(
-            CHANNELS_URL,
-            params={
-                "part": "snippet,statistics",
-                "forHandle": q,
-                "key": API_KEY,
-            },
-            timeout=10,
-        ).json()
+        items = _get_channels({"forHandle": q[1:]})
+        if items:
+            return {"items": items}
 
-        if r.get("items"):
-            return r
+    # 2️⃣ Try USERNAME (old channels)
+    items = _get_channels({"forUsername": q})
+    if items:
+        return {"items": items}
 
-    # 2️⃣ Fallback: Search API (name / text)
+    # 3️⃣ Fallback: SEARCH API
     search = requests.get(
-        SEARCH_URL,
+        f"{BASE_URL}/search",
         params={
+            "key": YOUTUBE_API_KEY,
             "part": "snippet",
-            "q": q.replace("@", ""),
+            "q": q,
             "type": "channel",
-            "maxResults": 1,
-            "key": API_KEY,
+            "maxResults": 1
         },
-        timeout=10,
+        timeout=10
     ).json()
 
     if not search.get("items"):
@@ -46,15 +48,8 @@ def get_channel_data(query: str):
 
     channel_id = search["items"][0]["snippet"]["channelId"]
 
-    # 3️⃣ Fetch by channel ID
-    channel = requests.get(
-        CHANNELS_URL,
-        params={
-            "part": "snippet,statistics",
-            "id": channel_id,
-            "key": API_KEY,
-        },
-        timeout=10,
-    ).json()
+    items = _get_channels({"id": channel_id})
+    if items:
+        return {"items": items}
 
-    return channel if channel.get("items") else None
+    return None
