@@ -1,54 +1,53 @@
 import os
 import requests
 
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+API_KEY = os.getenv("YOUTUBE_API_KEY")
+BASE = "https://www.googleapis.com/youtube/v3"
 
-BASE_URL = "https://www.googleapis.com/youtube/v3"
 
-
-def _get_channels(params):
-    params["key"] = YOUTUBE_API_KEY
+def _channels(params):
+    params["key"] = API_KEY
     params["part"] = "snippet,statistics"
-    res = requests.get(f"{BASE_URL}/channels", params=params, timeout=10).json()
-    return res.get("items")
+    r = requests.get(f"{BASE}/channels", params=params, timeout=10).json()
+    return r.get("items", [])
 
 
 def get_channel_data(query: str):
-    if not YOUTUBE_API_KEY:
+    if not API_KEY:
         return None
 
     q = query.strip()
 
-    # 1️⃣ Try HANDLE (most reliable now)
+    # 1️⃣ HANDLE (@name)
     if q.startswith("@"):
-        items = _get_channels({"forHandle": q[1:]})
+        items = _channels({"forHandle": q[1:]})
         if items:
             return {"items": items}
 
-    # 2️⃣ Try USERNAME (old channels)
-    items = _get_channels({"forUsername": q})
+    # 2️⃣ USERNAME
+    items = _channels({"forUsername": q})
     if items:
         return {"items": items}
 
-    # 3️⃣ Fallback: SEARCH API
+    # 3️⃣ SEARCH fallback
     search = requests.get(
-        f"{BASE_URL}/search",
+        f"{BASE}/search",
         params={
-            "key": YOUTUBE_API_KEY,
+            "key": API_KEY,
             "part": "snippet",
             "q": q,
             "type": "channel",
-            "maxResults": 1
+            "maxResults": 1,
         },
-        timeout=10
+        timeout=10,
     ).json()
 
     if not search.get("items"):
         return None
 
     channel_id = search["items"][0]["snippet"]["channelId"]
+    items = _channels({"id": channel_id})
 
-    items = _get_channels({"id": channel_id})
     if items:
         return {"items": items}
 
