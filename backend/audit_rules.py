@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 def run_audit(channel_data):
     stats = channel_data["items"][0]["statistics"]
     published = channel_data["items"][0]["snippet"]["publishedAt"]
@@ -15,7 +18,7 @@ def run_audit(channel_data):
             "Strong subscriber base."
             if subscribers >= 100000
             else "Focus on consistency and audience engagement."
-        )
+        ),
     }
 
     # Rule 2: Content volume
@@ -25,7 +28,7 @@ def run_audit(channel_data):
             "Healthy number of videos."
             if videos >= 100
             else "Upload more content consistently."
-        )
+        ),
     }
 
     # Rule 3: View efficiency
@@ -36,33 +39,31 @@ def run_audit(channel_data):
             "Videos attract good average views."
             if avg_views >= 1000
             else "Improve thumbnails, titles, and SEO."
-        )
+        ),
     }
 
-        # Rule 4: Channel Activity
+    # Rule 4: Channel activity
     audit["channel_activity"] = {
         "status": "Active" if videos >= 50 else "Inactive",
         "message": (
             "Channel shows healthy publishing activity."
             if videos >= 50
             else "Channel has very few uploads. Increasing activity may improve growth."
-        )
+        ),
     }
 
-    # Rule 5: Channel Age Strength
-from datetime import datetime
+    # Rule 5: Channel age strength
+    channel_year = int(published[:4])
+    current_year = datetime.utcnow().year
+    age = current_year - channel_year
 
-channel_year = int(published[:4])
-current_year = datetime.utcnow().year
-age = current_year - channel_year
-
-audit["channel_age_strength"] = {
-    "status": "Strong" if age >= 5 else "New",
-    "message": (
-        "Channel has strong historical presence."
-        if age >= 5
-        else "Channel is relatively new. Growth may take time."
-    )
-}
+    audit["channel_age_strength"] = {
+        "status": "Strong" if age >= 5 else "New",
+        "message": (
+            "Channel has strong historical presence."
+            if age >= 5
+            else "Channel is relatively new. Growth may take time."
+        ),
+    }
 
     return audit
