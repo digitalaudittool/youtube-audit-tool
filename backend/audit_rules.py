@@ -79,6 +79,8 @@ def run_audit(channel_data):
     }
 
     # ---- Overall Channel Score ----
+
+
 score = 0
 
 if subscribers >= 100000:
@@ -101,8 +103,8 @@ audit["overall_channel_score"] = {
     "message": (
         "Excellent channel performance."
         if score >= 80
-        else "Channel has good potential but needs improvement."
-    )
+        else "Channel has growth potential."
+    ),
 }
 
-    return audit
+return audit
