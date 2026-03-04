@@ -66,4 +66,16 @@ def run_audit(channel_data):
         ),
     }
 
+    # Rule 6: Views per Subscriber
+    views_per_sub = views / subscribers if subscribers else 0
+
+    audit["views_per_subscriber"] = {
+        "status": "Strong" if views_per_sub >= 1 else "Weak",
+        "message": (
+            "Channel generates strong views compared to its subscriber base."
+            if views_per_sub >= 1
+            else "Subscriber base is high but views per video are relatively low."
+        ),
+    }
+
     return audit
