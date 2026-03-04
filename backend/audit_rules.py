@@ -38,4 +38,14 @@ def run_audit(channel_data):
         )
     }
 
+        # Rule 4: Channel Activity
+    audit["channel_activity"] = {
+        "status": "Active" if videos >= 50 else "Inactive",
+        "message": (
+            "Channel shows healthy publishing activity."
+            if videos >= 50
+            else "Channel has very few uploads. Increasing activity may improve growth."
+        )
+    }
+
     return audit
