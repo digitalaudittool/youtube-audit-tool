@@ -79,32 +79,30 @@ def run_audit(channel_data):
     }
 
     # ---- Overall Channel Score ----
+    score = 0
 
+    if subscribers >= 100000:
+        score += 20
 
-score = 0
+    if videos >= 100:
+        score += 20
 
-if subscribers >= 100000:
-    score += 20
+    if avg_views >= 1000:
+        score += 20
 
-if videos >= 100:
-    score += 20
+    if videos >= 50:
+        score += 20
 
-if avg_views >= 1000:
-    score += 20
+    if age >= 5:
+        score += 20
 
-if videos >= 50:
-    score += 20
+    audit["overall_channel_score"] = {
+        "score": score,
+        "message": (
+            "Excellent channel performance."
+            if score >= 80
+            else "Channel has growth potential."
+        ),
+    }
 
-if age >= 5:
-    score += 20
-
-audit["overall_channel_score"] = {
-    "score": score,
-    "message": (
-        "Excellent channel performance."
-        if score >= 80
-        else "Channel has growth potential."
-    ),
-}
-
-return audit
+    return audit
