@@ -1,5 +1,6 @@
 def run_audit(channel_data):
     stats = channel_data["items"][0]["statistics"]
+    published = channel_data["items"][0]["snippet"]["publishedAt"]
 
     subscribers = int(stats.get("subscriberCount", 0))
     views = int(stats.get("viewCount", 0))
@@ -47,5 +48,21 @@ def run_audit(channel_data):
             else "Channel has very few uploads. Increasing activity may improve growth."
         )
     }
+
+    # Rule 5: Channel Age Strength
+from datetime import datetime
+
+channel_year = int(published[:4])
+current_year = datetime.utcnow().year
+age = current_year - channel_year
+
+audit["channel_age_strength"] = {
+    "status": "Strong" if age >= 5 else "New",
+    "message": (
+        "Channel has strong historical presence."
+        if age >= 5
+        else "Channel is relatively new. Growth may take time."
+    )
+}
 
     return audit
