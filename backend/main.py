@@ -17,7 +17,7 @@ app = FastAPI()
 # --------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # later restrict to your domain
+    allow_origins=["*"],  # later restrict to your domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,8 +33,8 @@ CACHE_TTL = 3600  # 1 hour
 # Rate limit (STEP 2B)
 # --------------------
 REQUESTS: Dict[str, list] = {}
-RATE_LIMIT = 20      # max requests
-RATE_WINDOW = 60     # per 60 seconds
+RATE_LIMIT = 20  # max requests
+RATE_WINDOW = 60  # per 60 seconds
 
 
 def rate_limited(ip: str) -> bool:
@@ -68,9 +68,7 @@ def audit(channel_id: str, request: Request):
     history = [t for t in history if now - t < RATE_WINDOW]
 
     if len(history) >= RATE_LIMIT:
-        return {
-            "error": "Rate limit exceeded. Please wait and try again."
-        }
+        return {"error": "Rate limit exceeded. Please wait and try again."}
 
     history.append(now)
     REQUESTS[ip] = history
@@ -88,6 +86,7 @@ def audit(channel_id: str, request: Request):
 
     audit_result = run_audit(data)
 
+
 stats = data["items"][0]["statistics"]
 snippet = data["items"][0]["snippet"]
 
@@ -103,23 +102,20 @@ channel_year = int(published[:4])
 
 response = {
     "channel": data["items"][0],
-
     "summary": {
         "subscribers": subs,
         "views": views,
         "videos": videos,
         "avg_views": int(avg_views),
         "views_per_subscriber": round(views_per_sub, 2),
-        "channel_age_year": channel_year
+        "channel_age_year": channel_year,
     },
-
-    "audit": audit_result
+    "audit": audit_result,
 }
 
-    CACHE[channel_id] = {
-        "time": now,
-        "data": response
-    }
+CACHE[channel_id] = {
+    "time": now,
+    "data": response,
+}
 
-    return response
-
+return response
