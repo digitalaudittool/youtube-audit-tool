@@ -88,10 +88,33 @@ def audit(channel_id: str, request: Request):
 
     audit_result = run_audit(data)
 
-    response = {
-        "channel": data["items"][0],
-        "audit": audit_result
-    }
+stats = data["items"][0]["statistics"]
+snippet = data["items"][0]["snippet"]
+
+subs = int(stats.get("subscriberCount", 0))
+views = int(stats.get("viewCount", 0))
+videos = int(stats.get("videoCount", 0))
+
+avg_views = views / videos if videos else 0
+views_per_sub = views / subs if subs else 0
+
+published = snippet["publishedAt"]
+channel_year = int(published[:4])
+
+response = {
+    "channel": data["items"][0],
+
+    "summary": {
+        "subscribers": subs,
+        "views": views,
+        "videos": videos,
+        "avg_views": int(avg_views),
+        "views_per_subscriber": round(views_per_sub, 2),
+        "channel_age_year": channel_year
+    },
+
+    "audit": audit_result
+}
 
     CACHE[channel_id] = {
         "time": now,
